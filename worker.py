@@ -50,7 +50,14 @@ def run():
         step = tool("memo_write", {"text": note, "step": step})["step"]
     found = tool("memo_search", {"step": step})
     step = found["step"]
-    if any(note not in json.dumps(found, ensure_ascii=False) for note in notes):
+    returned = found.get("notes", [])
+    if len(returned) != len(notes) or any(
+        item.get("at") != note.rsplit(" ", 1)[-1]
+        or item.get("chars") != len(note)
+        or item.get("stamps") != 1
+        or not note.startswith(item.get("text", ""))
+        for note, item in zip(notes, returned)
+    ):
         raise RuntimeError("Memo search did not return every note")
     submitted = tool("submit", {"result": "\n".join(notes), "skillVersion": "1", "step": step})
     if submitted.get("status") != "accepted" or "receipt" not in submitted:

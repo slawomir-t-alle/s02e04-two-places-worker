@@ -18,7 +18,10 @@ class WorkerFlowTest(unittest.TestCase):
             if name == "memo_write":
                 return {"step": f"step-{len(calls)}"}
             if name == "memo_search":
-                return {"step": "step-4", "notes": notes}
+                return {"step": "step-4", "notes": [
+                    {"at": note.rsplit(" ", 1)[-1], "chars": len(note), "stamps": 1, "text": note[:48]}
+                    for note in notes
+                ]}
             return {"status": "accepted", "receipt": "receipt", "result": arguments["result"]}
 
         with patch.dict(os.environ, {"MODE": "submit", "NOTES_JSON": json.dumps(notes)}), patch.object(worker, "tool", fake_tool):
